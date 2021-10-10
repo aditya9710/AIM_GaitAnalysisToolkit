@@ -8,6 +8,7 @@ from . import ModelBase as ModelBase
 from .ModelBase import gaussPDF
 from numpy import matlib
 
+
 class TPGMM(ModelBase.ModelBase):
 
     def __init__(self, nb_states, nb_dim=3, reg=[1e-8]):
@@ -117,14 +118,14 @@ class TPGMM(ModelBase.ModelBase):
             # Stopping criterion %%%%%%%%%%%%%%%%%%%%
             if abs(cumdist - cumdist_old) < cumdist_threshold and nb_step > minIter:
                 print('Maximum number of kmeans iterations, ' + str(abs(cumdist - cumdist_old)) + ' is reached')
-                print( 'steps reached, ' + str(nb_step) + ' is reached')
+                print('steps reached, ' + str(nb_step) + ' is reached')
                 searching = False
 
             cumdist_old = cumdist
             nb_step = nb_step + 1
 
             if nb_step > maxIter:
-                print ('steps reached, ' + str(nb_step) + ' is reached')
+                print('steps reached, ' + str(nb_step) + ' is reached')
                 searching = False
 
         self.mu = Mu
@@ -166,7 +167,8 @@ class TPGMM(ModelBase.ModelBase):
                 self.mu[:, i] = data.T.dot(GAMMA2[i, :].reshape((-1, 1))).T
                 mu = np.matlib.repmat(self.mu[:, i].reshape((-1, 1)), 1, self.nbData)
                 diff = (data.T - mu)
-                self.sigma[i] = diff.dot(np.diag(GAMMA2[i, :])).dot(diff.T) + np.diag(self.reg) #np.eye(self.nb_dim) * self.reg
+                self.sigma[i] = diff.dot(np.diag(GAMMA2[i, :])).dot(diff.T) + np.diag(
+                    self.reg)  # np.eye(self.nb_dim) * self.reg
 
             # self.priors = np.mean(GAMMA, axis=1)
 
@@ -179,11 +181,11 @@ class TPGMM(ModelBase.ModelBase):
             elif it > nb_min_steps:
                 if abs(LL[it] - LL[it - 1]) < 0.000001 or it == (maxiter - 1):
                     searching = False
-                    print( " number of interations for EM "  + str(it))
+                    print(" number of interations for EM " + str(it))
 
             it += 1
 
-        self.BIC = self.BIC_score(LL[it-1])
+        self.BIC = self.BIC_score(LL[it - 1])
         return GAMMA, self.BIC
 
     def relocateGaussian(self, A, b):
@@ -196,20 +198,20 @@ class TPGMM(ModelBase.ModelBase):
 
         # set up temp varibles for  old the new sigma and mu
         mu = np.zeros((self._nb_dim, self._nb_states))
-        sigma = np.array([np.zeros((self.nb_dim,self.nb_dim)) for i in range(self.nb_states)])
+        sigma = np.array([np.zeros((self.nb_dim, self.nb_dim)) for i in range(self.nb_states)])
 
         # loop through all the varibles
         for i in range(self._nb_states):
             temp_mu = np.zeros((self._nb_dim, 1))
             temp_sigma = np.zeros((self.nb_dim, self.nb_dim))
             for frame in range(self.frames):
-                curr_mu = A[frame].dot(self.mu[:,i].reshape((-1,1))) + b[frame]
+                curr_mu = A[frame].dot(self.mu[:, i].reshape((-1, 1))) + b[frame]
                 curr_sigma = np.dot(np.dot(A[frame], self.sigma[i]), A[frame].T)
                 temp_sigma = temp_sigma + np.linalg.pinv(curr_sigma)
                 temp_mu = temp_mu + np.linalg.pinv(curr_sigma).dot(curr_mu)
 
             sigma[i] = np.linalg.pinv(temp_sigma)
-            mu[:,i] = sigma[i].dot(temp_mu).flatten().tolist()
+            mu[:, i] = sigma[i].dot(temp_mu).flatten().tolist()
 
         # update the new mu and sigma
         self.sigma = sigma

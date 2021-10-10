@@ -4,20 +4,20 @@ import copy
 import matplotlib
 from matplotlib.patches import Polygon
 from matplotlib.collections import PatchCollection
-from . import ModelBase
-from .ModelBase import gaussPDF
+from GaitAnaylsisToolkit.LearningTools.Models import ModelBase
+from GaitAnaylsisToolkit.LearningTools.Models.ModelBase import gaussPDF
 from numpy import matlib
+
 
 class GMM(ModelBase.ModelBase):
 
     def __init__(self, nb_states, nb_dim=3):
         """
-
         :param nb_states:
         :param nb_dim:
         :param init_zeros:
         :param mu:
-        :param lmbda:
+        :param lambda:
         :param sigma:
         :param priors:
         """
@@ -53,7 +53,7 @@ class GMM(ModelBase.ModelBase):
         train the model to find the Means and covariance
         :param data:
         :param reg: error
-        :param maxiter: max number of interations before breaking out
+        :param maxiter: max number of iterations before breaking out
         :return:
         """
         self.init_params(data)
@@ -68,7 +68,6 @@ class GMM(ModelBase.ModelBase):
             - sigma - list covariance matrix
             - mu - list of means
             - priors - list of priors
-
         """
         return self.sigma, self.mu, self.priors
 
@@ -139,7 +138,6 @@ class GMM(ModelBase.ModelBase):
 
         return idList
 
-
     def em(self, data, reg=1e-8, maxiter=2000):
         """
         Perform the EM algorithum
@@ -181,7 +179,7 @@ class GMM(ModelBase.ModelBase):
 
             # self.priors = np.mean(GAMMA, axis=1)
 
-            LL[it] = np.sum(np.log(np.sum(L, axis=0))) #/ self.nbData
+            LL[it] = np.sum(np.log(np.sum(L, axis=0)))  # / self.nbData
             # Check for convergence
             if it > nb_min_steps:
                 if LL[it] - LL[it - 1] < 0.00001 or it == (maxiter - 1):
@@ -189,7 +187,5 @@ class GMM(ModelBase.ModelBase):
 
             it += 1
 
-        self.BIC = self.BIC_score(LL[it-1])
+        self.BIC = self.BIC_score(LL[it - 1])
         return GAMMA, self.BIC
-
-

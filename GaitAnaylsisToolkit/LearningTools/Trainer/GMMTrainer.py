@@ -1,6 +1,6 @@
-from . import TrainerBase
+from GaitAnaylsisToolkit.LearningTools.Trainer import TrainerBase
 from GaitCore.Core import utilities as utl
-from ..Models import GMM, GMR
+from GaitAnaylsisToolkit.LearningTools.Models import GMM, GMR
 import numpy as np
 from numpy import matlib
 
