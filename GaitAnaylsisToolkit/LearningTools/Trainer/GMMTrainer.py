@@ -13,7 +13,8 @@ class GMMTrainer(TrainerBase.TrainerBase):
            :param n_rfs: number of DMPs
            :param dt: time step
            :return: None
-           """
+       """
+
         if len(reg) == len(demo):
             my_reg = [1e-8] + reg
         else:
@@ -39,7 +40,7 @@ class GMMTrainer(TrainerBase.TrainerBase):
         gammam, BIC = self.gmm.train(tau)
         sigma, mu, priors = self.gmm.get_model()
         gmr = GMR.GMR(mu=mu, sigma=sigma, priors=priors)
-        expData, expSigma, H = gmr.train(sIn, [0], [1], self.reg) # train the model
+        expData, expSigma, H = gmr.train(sIn, [0], [1], self.reg)   # train the model
 
         self.data["BIC"] = BIC
         self.data["len"] = len(sIn)

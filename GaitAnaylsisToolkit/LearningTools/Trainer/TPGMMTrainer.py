@@ -119,7 +119,6 @@ class TPGMMTrainer(TrainerBase.TrainerBase):
 
     def gen_path(self, demos):
         """
-
         :param demos: list of training data
         :return:
             - taux: x_hat = x + Kp*dx + Kd*ddx

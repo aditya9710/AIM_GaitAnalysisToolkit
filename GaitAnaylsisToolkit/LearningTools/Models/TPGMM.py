@@ -15,8 +15,8 @@ class TPGMM(ModelBase.ModelBase):
         """
 
         :param nb_states: number of states
-        :param nb_dim: demention of the data
-        :param reg: regilization term
+        :param nb_dim: dimension of the data
+        :param reg: regularization term
         """
         super(TPGMM, self).__init__(nb_states, nb_dim, reg)
         self.frames = 1
@@ -50,7 +50,7 @@ class TPGMM(ModelBase.ModelBase):
         """
         Train the model on the data
         :param data:  data to train on
-        :param maxiter: maxinum number of interations
+        :param maxiter: maximum number of iterations
         :return:
         """
         self.init_params(data)
@@ -71,7 +71,7 @@ class TPGMM(ModelBase.ModelBase):
 
     def kmeansclustering(self, data):
         """
-        Use keans to init the GMM algorithum
+        Use keans to init the GMM algorithm
         :param data:
         :return:
         """

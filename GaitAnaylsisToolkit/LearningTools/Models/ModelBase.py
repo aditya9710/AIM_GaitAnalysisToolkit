@@ -143,7 +143,6 @@ def plot_activation(sIn, H, ax):
 
 def gaussPDF(x, mean, covar):
     """Multi-variate normal distribution
-
     x: [n_data x n_vars] matrix of data_points for which to evaluate
     mean: [n_vars] vector representing the mean of the distribution
     covar: [n_vars x n_vars] matrix representing the covariance of the distribution

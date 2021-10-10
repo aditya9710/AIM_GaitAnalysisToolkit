@@ -1,4 +1,4 @@
-from . import RunnerBase
+from GaitAnaylsisToolkit.LearningTools.Runner import RunnerBase
 import numpy as np
 from random import uniform
 from numpy import matlib
@@ -14,7 +14,7 @@ class TPGMMRunner(RunnerBase.RunnerBase):
         self._x = self.get_start() # initial starting position
         self._goal = self._data["goal"] # initial ending position
         self._dx = np.zeros(len(self._x)).reshape((-1, 1))
-        self._v0 = np.zeros(len(self._x)).reshape((-1, 1)) # vector of zeros for velocity
+        self._v0 = np.zeros(len(self._x)).reshape((-1, 1))  # vector of zeros for velocity
         self._path = []
         self._index = 0
         self._K = []
