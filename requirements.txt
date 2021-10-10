@@ -1,8 +1,7 @@
 GaitCore>=1.3.2
-Vicon>=1.2
+Vicon>=1.3
 pandas
 numpy
 scipy
 matplotlib
 dtw
-pyquaternion

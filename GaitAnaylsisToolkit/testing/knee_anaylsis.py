@@ -2,7 +2,7 @@ import sys
 import matplotlib.pyplot as plt
 from scipy import signal
 import numpy as np
-from ..Session import ViconGaitingTrial
+from GaitAnaylsisToolkit.Session import ViconGaitingTrial
 import Vicon
 
 
@@ -12,13 +12,13 @@ def plot_stair_joint(file):
     plt.plot(joints.hip.angle.x)
     plt.plot(joints.knee.angle.x)
     plt.plot(joints.ankle.angle.x)
-    print get_stair_ranges(file)
+    print(get_stair_ranges(file))
     plt.legend(["x", "y", "z"])
     plt.show()
 
 
 def get_stair_ranges(file, side="R"):
-    print file
+    print(file)
     trial = ViconGaitingTrial.ViconGaitingTrial(vicon_file=file)
     if side == "R":
         m = trial.vicon.markers.get_marker("RTOE")
@@ -26,7 +26,8 @@ def get_stair_ranges(file, side="R"):
         m = trial.vicon.markers.get_marker("LTOE")
 
     z = []
-    for i in xrange(len(m)):
+
+    for i in range(len(m)):
         z.append(m[i].z)
 
     N = 10
@@ -41,7 +42,7 @@ def get_stair_ranges(file, side="R"):
 
     index = secound_step
     while z[index] != z[index + 1]:
-        print index
+        print(index)
         index += 1
     final_index = index
 
@@ -164,7 +165,7 @@ def compare_stair_moments(files, side, legend):
 
 
 def compare_stair_power(files, side, legend):
-    print "asldjflasdjf"
+    print ("asldjflasdjf")
     resample = 100000
     fig, (ax1, ax2, ax3) = plt.subplots(3, sharex=True)
     fig.suptitle('Stair Joint Power', fontsize=20)
@@ -254,14 +255,14 @@ def compare_walking_angles(files, list_of_index, legend=None):
     std_knee = np.std(knee, axis=0)
     std_ankle = np.std(ankle, axis=0)
 
-    print "Ankle: "
-    print "Max Hip: ", np.max(np.abs(mean_hip)), " Std: ", std_hip[mean_hip.tolist().index(np.max(mean_hip))]
-    print "Max Knee: ", np.max(np.abs(mean_knee)), " Std: ", std_knee[mean_knee.tolist().index(np.max(mean_knee))]
-    print "Max Ankle: ", np.max(np.abs(mean_ankle)), " Std: ", std_ankle[mean_ankle.tolist().index(np.max(mean_ankle))]
+    print("Ankle: ")
+    print("Max Hip: ", np.max(np.abs(mean_hip)), " Std: ", std_hip[mean_hip.tolist().index(np.max(mean_hip))])
+    print("Max Knee: ", np.max(np.abs(mean_knee)), " Std: ", std_knee[mean_knee.tolist().index(np.max(mean_knee))])
+    print("Max Ankle: ", np.max(np.abs(mean_ankle)), " Std: ", std_ankle[mean_ankle.tolist().index(np.max(mean_ankle))])
 
-    print "Min Hip: ", np.min(np.abs(mean_hip)), " Std: ", std_hip[mean_hip.tolist().index(np.min(mean_hip))]
-    print "Min Knee: ", np.min(np.abs(mean_knee)), " Std: ", std_knee[mean_knee.tolist().index(np.min(mean_knee))]
-    print "Min Ankle: ", np.min(np.abs(mean_ankle)), " Std: ", std_ankle[mean_ankle.tolist().index(np.min(mean_ankle))]
+    print("Min Hip: ", np.min(np.abs(mean_hip)), " Std: ", std_hip[mean_hip.tolist().index(np.min(mean_hip))])
+    print("Min Knee: ", np.min(np.abs(mean_knee)), " Std: ", std_knee[mean_knee.tolist().index(np.min(mean_knee))])
+    print("Min Ankle: ", np.min(np.abs(mean_ankle)), " Std: ", std_ankle[mean_ankle.tolist().index(np.min(mean_ankle))])
 
     ax1.plot(time, mean_hip, 'k-', linewidth=4)
     ax2.plot(time, mean_knee, 'k-', linewidth=4)
@@ -293,7 +294,7 @@ def compare_walking_moments(files, list_of_index, legend=None):
     for file, i in zip(files, list_of_index):
         trial = ViconGaitingTrial.ViconGaitingTrial(vicon_file=file)
         joints = trial.get_joint_trajectories()
-        print "file ", file
+        print("file ", file)
         sample = len(joints["Rhip"][i].angle.data)
         resample = min(resample, sample)
 
@@ -347,7 +348,7 @@ def compare_walking_power(files, list_of_index, legend=None):
     for file, i in zip(files, list_of_index):
         trial = ViconGaitingTrial.ViconGaitingTrial(vicon_file=file)
         joints = trial.get_joint_trajectories()
-        print "file ", file
+        print("file ", file)
         sample = len(joints["Rhip"][i].angle.data)
         resample = min(resample, sample)
 

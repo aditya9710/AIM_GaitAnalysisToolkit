@@ -4,28 +4,30 @@ import copy
 import matplotlib
 from matplotlib.patches import Polygon
 from matplotlib.collections import PatchCollection
-from . import ModelBase as ModelBase, GMM
-from .ModelBase import gaussPDF
+from GaitAnaylsisToolkit.LearningTools.Models import ModelBase
+from GaitAnaylsisToolkit.LearningTools.Models.ModelBase import gaussPDF
 from numpy import matlib
+
 
 class GMM(ModelBase.ModelBase):
 
-    def __init__(self, nb_states, nb_dim=3, reg=[1e-8]):
+    def __init__(self, nb_states, nb_dim=3):
         """
-
-        :param nb_states: number of states
-        :param nb_dim: demention of the data
-        :param reg: regilization term
+        :param nb_states:
+        :param nb_dim:
+        :param init_zeros:
+        :param mu:
+        :param lambda:
+        :param sigma:
+        :param priors:
         """
-        super(GMM, self).__init__(nb_states, nb_dim, reg)
-        self.frames = 1
-
+        super(GMM, self).__init__(nb_states, nb_dim)
 
     def init_params(self, data):
         """
-        Sets up all the parameters
-        :param data: vector of the data
-        :return:
+        Sets up all the parameters learning, Initials all the variables with values
+        :param data:
+        :return: None
         """
         idList = self.kmeansclustering(data)
         priors = np.ones(self.nb_states) / self.nb_states
@@ -42,19 +44,20 @@ class GMM(ModelBase.ModelBase):
 
             mat = np.concatenate((mat, mat), axis=1)
             priors[i] = len(idtmp[0])
-            self.sigma[i] = np.cov(mat) + np.diag(self.reg)
+            self.sigma[i] = np.cov(mat) + np.eye(self.nb_dim) * self.reg
 
         self.priors = priors / np.sum(priors)
 
-    def train(self, data, maxiter=2000):
+    def train(self, data, reg=1e-8, maxiter=2000):
         """
-        Train the model on the data
-        :param data:  data to train on
-        :param maxiter: maxinum number of interations
+        train the model to find the Means and covariance
+        :param data:
+        :param reg: error
+        :param maxiter: max number of iterations before breaking out
         :return:
         """
         self.init_params(data)
-        gamma, BIC = self.em(data, maxiter)
+        gamma, BIC = self.em(data, reg, maxiter)
         return gamma, BIC
 
     def get_model(self):
@@ -65,19 +68,20 @@ class GMM(ModelBase.ModelBase):
             - sigma - list covariance matrix
             - mu - list of means
             - priors - list of priors
-
         """
         return self.sigma, self.mu, self.priors
 
-    def kmeansclustering(self, data):
+    def kmeansclustering(self, data, reg=1e-8):
         """
-        Use keans to init the GMM algorithum
-        :param data:
+        Perform K-means to init the GMM
+        :param data: data to cluster
+        :param reg: error term
         :return:
         """
+        self.reg = reg
         # Criterion to stop the EM iterative update
         cumdist_threshold = 1e-10
-        maxIter = 2000
+        maxIter = 200
         minIter = 20
 
         # Initialization of the parameters
@@ -96,9 +100,10 @@ class GMM(ModelBase.ModelBase):
             # E-step %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
             for i in range(0, self.nb_states):
                 # Compute distances
-                mat = np.matlib.repmat(Mu[:, i].reshape((-1, 1)), 1, self.nbData)
-                err = np.power(data - mat, 2.0)
-                distTmpTrans[:, i] = np.sum(err, 0)
+                thing = np.matlib.repmat(Mu[:, i].reshape((-1, 1)), 1, self.nbData)
+                temp = np.power(data - thing, 2.0)
+                temp2 = np.sum(temp, 0)
+                distTmpTrans[:, i] = temp2
 
             vTmp = np.min(distTmpTrans, 1)
             cumdist = sum(vTmp)
@@ -113,32 +118,35 @@ class GMM(ModelBase.ModelBase):
             for i in range(self.nb_states):
                 # Update the centers
                 id = np.where(idList == i)
-                Mu[:, i] = self.average(data=data, id=id)
+                Mu[:, i] = np.mean(data[:, id], 2).reshape((1, -1))
 
             # Stopping criterion %%%%%%%%%%%%%%%%%%%%
             if abs(cumdist - cumdist_old) < cumdist_threshold and nb_step > minIter:
                 print('Maximum number of kmeans iterations, ' + str(abs(cumdist - cumdist_old)) + ' is reached')
-                print( 'steps reached, ' + str(nb_step) + ' is reached')
+                print('steps reached, ' + str(nb_step) + ' is reached')
                 searching = False
 
             cumdist_old = cumdist
             nb_step = nb_step + 1
 
             if nb_step > maxIter:
-                print ('steps reached, ' + str(nb_step) + ' is reached')
+                print('steps reached, ' + str(nb_step) + ' is reached')
                 searching = False
+            print("maxitter ", nb_step)
 
         self.mu = Mu
 
         return idList
 
-    def em(self, data, maxiter=2000):
+    def em(self, data, reg=1e-8, maxiter=2000):
         """
         Perform the EM algorithum
         :param data: data to learn
+        :param reg: error
         :param maxiter:  max number of interations
         :return:
         """
+        self.reg = reg
 
         nb_min_steps = 50  # min num iterations
         nb_max_steps = maxiter  # max iterations
@@ -155,7 +163,7 @@ class GMM(ModelBase.ModelBase):
             L = np.zeros((self.nb_states, nb_samples))
 
             for i in range(self.nb_states):
-                L[i, :] = self.priors[i] * self.gaussPDF(data.T, self.mu[:, i], self.sigma[i])
+                L[i, :] = self.priors[i] * gaussPDF(data.T, self.mu[:, i], self.sigma[i])
 
             GAMMA = L / np.sum(L, axis=0)
             GAMMA2 = GAMMA / np.sum(GAMMA, axis=1)[:, np.newaxis]
@@ -166,29 +174,18 @@ class GMM(ModelBase.ModelBase):
                 self.priors[i] = np.sum(GAMMA[i, :]) / self.nbData
                 self.mu[:, i] = data.T.dot(GAMMA2[i, :].reshape((-1, 1))).T
                 mu = np.matlib.repmat(self.mu[:, i].reshape((-1, 1)), 1, self.nbData)
-                diff = self.displacement(data.T , mu)
-                self.sigma[i] = diff.dot(np.diag(GAMMA2[i, :])).dot(diff.T) + np.diag(self.reg) #np.eye(self.nb_dim) * self.reg
+                diff = (data.T - mu)
+                self.sigma[i] = diff.dot(np.diag(GAMMA2[i, :])).dot(diff.T) + np.eye(self.nb_dim) * self.reg
 
             # self.priors = np.mean(GAMMA, axis=1)
 
-            LL[it] = np.sum(np.log(np.sum(L, axis=0))) / self.nbData
+            LL[it] = np.sum(np.log(np.sum(L, axis=0)))  # / self.nbData
             # Check for convergence
-
-            if it >= nb_max_steps:
-                StopIteration
-
-            elif it > nb_min_steps:
-                if abs(LL[it] - LL[it - 1]) < 0.000001 or it == (maxiter - 1):
+            if it > nb_min_steps:
+                if LL[it] - LL[it - 1] < 0.00001 or it == (maxiter - 1):
                     searching = False
-                    print( " number of interations for EM "  + str(it))
 
             it += 1
 
-        self.BIC = self.BIC_score(LL[it-1] * self.nbData)
+        self.BIC = self.BIC_score(LL[it - 1])
         return GAMMA, self.BIC
-
-
-
-
-# p = PatchCollection(patches)
-# ax.add_collection(p)

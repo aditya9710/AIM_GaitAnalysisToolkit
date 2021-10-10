@@ -75,15 +75,6 @@ class GMR(object):
     def states(self, value):
         self._states = value
 
-    def displacement(self, p1, p2):
-        '''
-        get the displacement between two points
-        :param p1: point 1
-        :param p2: point 2
-        :return:
-        '''
-        return p1-p2
-
     def train(self, DataIn, in_, out_, reg=1e-8):
         """
         Train the system
@@ -108,7 +99,7 @@ class GMR(object):
         for t in range(nbData):
 
             for i in range(self.states):
-                H[i, t] = self.priors[i] * gaussPDF(np.asarray([DataIn[t]]), self.mu[in_, i], self.sigma[i][in_, in_], displacement=self.displacement)
+                H[i, t] = self.priors[i] * gaussPDF(np.asarray([DataIn[t]]), self.mu[in_, i], self.sigma[i][in_, in_])
 
             H[:, t] = H[:, t] / np.sum(H[:, t] + np.finfo(float).tiny)
 
