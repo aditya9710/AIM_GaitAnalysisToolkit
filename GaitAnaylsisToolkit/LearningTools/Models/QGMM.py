@@ -1,5 +1,7 @@
 import numpy as np
+from numpy import matlib
 import copy
+from pyquaternion import Quaternion
 from GaitAnaylsisToolkit.LearningTools.Models.ModelBase import gaussPDF
 from GaitAnaylsisToolkit.LearningTools.Models import ModelBase
 
@@ -65,6 +67,50 @@ class QGMM(ModelBase.ModelBase):
 
         return self.sigma, self.mu, self.priors
 
+    def quaternionDisplacement(self, q1):
+        q1 = self.
+        conj_q1 = q1.conjugate
+        displacement = Quaternion.log(self, conj_q1)
+        return displacement
+
+    def gaussPDF(x, mean, covar):
+        """Multi-variate normal distribution for quaternions
+        x: [n_data x n_vars] matrix of data_points for which to evaluate
+        mean: [n_vars] vector representing the mean of the distribution
+        covar: [n_vars x n_vars] matrix representing the covariance of the distribution
+        """
+
+        # Check dimensions of covariance matrix:
+        if type(covar) is np.ndarray:
+            n_vars = covar.shape[0]
+        else:
+            n_vars = 1
+
+        # Check dimensions of data:
+        if x.ndim > 1 and n_vars == len(x):
+            nbData = x.shape[1]
+        else:
+            nbData = x.shape[0]
+
+        # nbData = x.shape[1]
+        mu = np.matlib.repmat(mean.reshape((-1, 1)), 1, nbData)
+        # diff = (x - mu)
+        diff = x.quaternionDisplacement(x, mu)
+
+        # Distinguish between multi and single variate distribution:
+        if n_vars > 1:
+            lambdadiff = np.linalg.pinv(covar).dot(diff) * diff
+            scale = np.sqrt(
+                np.power((2 * np.pi), n_vars) * (abs(np.linalg.det(covar)) + 2.2251e-308))
+            p = np.sum(lambdadiff, 0)
+        else:
+            lambdadiff = diff / covar
+            scale = np.sqrt(np.power((2 * np.pi), n_vars) * covar + 2.2251e-308)
+            p = diff * lambdadiff
+
+        prop = np.exp(-0.5 * p) / scale
+        return prop.T
+
     def kmeansclustering(self, data, reg=1e-8):
         """
         Perform K-means to init the GMM
@@ -92,7 +138,7 @@ class QGMM(ModelBase.ModelBase):
 
         while searching:
 
-            # E-step %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%
+            # E-step %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             for i in range(0, self.nb_states):
                 # Compute distances
                 thing = np.matlib.repmat(Mu[:, i].reshape((-1, 1)), 1, self.nbData)
@@ -184,3 +230,4 @@ class QGMM(ModelBase.ModelBase):
 
         self.BIC = self.BIC_score(LL[it - 1])
         return GAMMA, self.BIC
+

@@ -48,8 +48,3 @@ class GMMRunner(RunnerBase.RunnerBase):
             self._index = 0
         else:
             self._index = value
-
-    @property
-    def goal(self):
-        return self._goal
-
