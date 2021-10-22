@@ -192,7 +192,7 @@ class TPGMM(ModelBase.ModelBase):
         """
         Use frame transformations to move the data from different observer frames
         :param A:  list of rotation matrix
-        :param b: list of translation matix
+        :param b: list of translation matrix
         :return:
         """
 

@@ -67,13 +67,7 @@ class QGMM(ModelBase.ModelBase):
 
         return self.sigma, self.mu, self.priors
 
-    def quaternionDisplacement(self, q1):
-        q1 = self.
-        conj_q1 = q1.conjugate
-        displacement = Quaternion.log(self, conj_q1)
-        return displacement
-
-    def gaussPDF(x, mean, covar):
+    def gaussPDF(self, x, mean, covar):
         """Multi-variate normal distribution for quaternions
         x: [n_data x n_vars] matrix of data_points for which to evaluate
         mean: [n_vars] vector representing the mean of the distribution
@@ -95,7 +89,7 @@ class QGMM(ModelBase.ModelBase):
         # nbData = x.shape[1]
         mu = np.matlib.repmat(mean.reshape((-1, 1)), 1, nbData)
         # diff = (x - mu)
-        diff = x.quaternionDisplacement(x, mu)
+        diff = Quaternion.distance(x, mu)
 
         # Distinguish between multi and single variate distribution:
         if n_vars > 1:
@@ -187,6 +181,7 @@ class QGMM(ModelBase.ModelBase):
         :param maxiter:  max number of iterations
         :return:
         """
+
         self.reg = reg
 
         nb_min_steps = 50  # min number of iterations
