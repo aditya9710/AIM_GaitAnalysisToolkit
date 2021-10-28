@@ -74,6 +74,9 @@ class QGMM(ModelBase.ModelBase):
         covar: [n_vars x n_vars] matrix representing the covariance of the distribution
         """
 
+        # Number of quaternions in sample
+        nb_Quat = 1
+
         # Check dimensions of covariance matrix:
         if type(covar) is np.ndarray:
             n_vars = covar.shape[0]
@@ -86,20 +89,23 @@ class QGMM(ModelBase.ModelBase):
         else:
             nbData = x.shape[0]
 
-        # nbData = x.shape[1]
         mu = np.matlib.repmat(mean.reshape((-1, 1)), 1, nbData)
-        # diff = (x - mu)
-        diff = Quaternion.distance(x, mu)
+        euclidDiff = (x - mu)
+        quatDiff = Quaternion.distance(x[3:], mu[3:])
+
+        diff = euclidDiff
+        np.asarray(diff)
+        np.append(diff, quatDiff)
 
         # Distinguish between multi and single variate distribution:
         if n_vars > 1:
-            lambdadiff = np.linalg.pinv(covar).dot(diff) * diff
+            lambdadiff = (diff.T).dot(np.linalg.pinv(covar)) * diff
             scale = np.sqrt(
-                np.power((2 * np.pi), n_vars) * (abs(np.linalg.det(covar)) + 2.2251e-308))
+                np.power((2 * np.pi), n_vars - nb_Quat) * (abs(np.linalg.det(covar))))
             p = np.sum(lambdadiff, 0)
         else:
             lambdadiff = diff / covar
-            scale = np.sqrt(np.power((2 * np.pi), n_vars) * covar + 2.2251e-308)
+            scale = np.sqrt(np.power((2 * np.pi), n_vars - nb_Quat) * covar)
             p = diff * lambdadiff
 
         prop = np.exp(-0.5 * p) / scale

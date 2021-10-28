@@ -71,7 +71,7 @@ class TPGMM(ModelBase.ModelBase):
 
     def kmeansclustering(self, data):
         """
-        Use keans to init the GMM algorithm
+        Use k-means to init the GMM algorithm
         :param data:
         :return:
         """
